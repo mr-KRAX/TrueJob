@@ -17,12 +17,13 @@ status: Silver, Gold, Platinum
 is_blocked: 0, 1
 """
 create_users_table = """CREATE TABLE IF NOT EXISTS users(
-user_id INT PRIMARY KEY,
-type TEXT,
-employer_rating REAL,
-worker_rating REAL,
-status TEXT,
-is_blocked INT);
+  user_id INT PRIMARY KEY,
+  type TEXT,
+  employer_rating REAL,
+  worker_rating REAL,
+  status TEXT,
+  is_blocked INT
+)
 """
 
 
@@ -44,18 +45,19 @@ views_counter
 likes_counter
 """
 create_offers_table = """CREATE TABLE IF NOT EXISTS offers(
-offer_id INT PRIMARY KEY,
-name TEXT,
-discription TEXT,
-price INT,
-exp_date TEXT,
-location TEXT,
-status TEXT,
-owner INT,
-priority TEXT,
-time_created TEXT,
-views_counter INT,
-likes_counter INT
+  offer_id INT PRIMARY KEY,
+  name TEXT,
+  discription TEXT,
+  price INT,
+  exp_date TEXT,
+  location TEXT,
+  status TEXT,
+  owner INT,
+  priority TEXT,
+  time_created TEXT,
+  views_counter INT,
+  likes_counter INT
+)
 """
 
 """
@@ -63,6 +65,11 @@ TABLE-3 LikedOffers (Связь пользователь - понравивше�
 
 PK user: vkid
 PK offer_id: 
+"""
+create_liked_offers = """CREATE TABLE IF NOT EXISTS likedOffers(
+  vkid INT PRIMARY KEY,
+  offer_id INT PRIMARY KEY
+)
 """
 
 """
@@ -74,6 +81,14 @@ PK assessed_user: vkid
 assessment: 0.0 - 5.0  #Крайняя оценка
 date: 
 """
+create_assessments = """CREATE TABLE IF NOT EXISTS assessments(
+  vkid INT PRIMARY KEY,
+  role TEXT PRIMARY KEY,
+  assessed_user INT PRIMARY KEY,
+  assessment REAL
+)
+"""
+
 
 """
 TABLE-5 Reports (Связь Пользователь - непристойное объявление)
@@ -81,7 +96,8 @@ TABLE-5 Reports (Связь Пользователь - непристойное 
 PK user: vkid
 PK offer_id: 
 """
-
-
-
-
+create_reports = """CREATE TABLE IF NOT EXISTS reports(
+  vkid INT PRIMARY KEY,
+  offer_id INT PRIMARY KEY
+)
+"""
