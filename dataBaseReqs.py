@@ -17,12 +17,12 @@ status: Silver, Gold, Platinum
 is_blocked: 0, 1
 """
 create_users_table = """CREATE TABLE IF NOT EXISTS users(
-  user_id INT PRIMARY KEY,
-  type TEXT,
+  vkid TEXT PRIMARY KEY,
+  is_blocked INT
   employer_rating REAL,
   worker_rating REAL,
   status TEXT,
-  is_blocked INT
+  type TEXT,
 )
 """
 
@@ -47,7 +47,7 @@ likes_counter
 create_offers_table = """CREATE TABLE IF NOT EXISTS offers(
   offer_id INT PRIMARY KEY,
   name TEXT,
-  discription TEXT,
+  description TEXT,
   price INT,
   exp_date TEXT,
   location TEXT,
