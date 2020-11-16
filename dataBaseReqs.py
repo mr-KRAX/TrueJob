@@ -35,7 +35,6 @@ description:
 price:
 exp_date:
 location:
-offer_id:
 status: Active, InProgress, Hidden, Closed
 owner: vkid
 priority: Top, Regular, Low
@@ -51,7 +50,7 @@ price INT,
 exp_date TEXT,
 location TEXT,
 status TEXT,
-owner INT,
+owner TEXT,
 priority TEXT,
 time_created TEXT,
 views_counter INT,
