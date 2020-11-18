@@ -9,7 +9,7 @@
 """
 TABLE-1 users
 
-PK user_id: vkid
+PK vkid: vkid
 type: Admin, Regular
 employer_rating: 0.0 - 5.0
 worker_rating: 0.0 - 5.0
@@ -17,13 +17,12 @@ status: Silver, Gold, Platinum
 is_blocked: 0, 1
 """
 create_users_table = """CREATE TABLE IF NOT EXISTS users(
-  vkid TEXT PRIMARY KEY,
-  is_blocked INT
-  employer_rating REAL,
-  worker_rating REAL,
-  status TEXT,
-  type TEXT,
-)
+vkid TEXT PRIMARY KEY,
+type TEXT,
+employer_rating REAL,
+worker_rating REAL,
+status TEXT,
+is_blocked INT);
 """
 
 
@@ -32,31 +31,30 @@ TABLE-2 offers
 
 PK offer_id:
 name:
-discription:
+description:
 price:
 exp_date:
 location:
-offer_id:
 status: Active, InProgress, Hidden, Closed
 owner: vkid
-priority: Top, REg, Low
+priority: Top, Regular, Low
 time_created:
-views_counter
-likes_counter
+views_counter:
+likes_counter:
 """
 create_offers_table = """CREATE TABLE IF NOT EXISTS offers(
-  offer_id INT PRIMARY KEY,
-  name TEXT,
-  description TEXT,
-  price INT,
-  exp_date TEXT,
-  location TEXT,
-  status TEXT,
-  owner INT,
-  priority TEXT,
-  time_created TEXT,
-  views_counter INT,
-  likes_counter INT
+offer_id INT PRIMARY KEY,
+name TEXT,
+description TEXT,
+price INT,
+exp_date TEXT,
+location TEXT,
+status TEXT,
+owner TEXT,
+priority TEXT,
+time_created TEXT,
+views_counter INT,
+likes_counter INT
 )
 """
 
@@ -68,7 +66,7 @@ PK offer_id:
 """
 create_liked_offers = """CREATE TABLE IF NOT EXISTS likedOffers(
   vkid INT PRIMARY KEY,
-  offer_id INT PRIMARY KEY
+  offer_id INT
 )
 """
 
@@ -76,15 +74,15 @@ create_liked_offers = """CREATE TABLE IF NOT EXISTS likedOffers(
 TABLE-4 Assessments (Связь Пользователь - Оцененный пользователь)
 
 PK user: vkid
-PK role: worker, employer
+PK assessment_role: Worker, Employer
 PK assessed_user: vkid
-assessment: 0.0 - 5.0  #Крайняя оценка
-date: 
+assessment_as_worker: Null или 0.0 - 5.0  #Крайняя оценка
+assessment_as_employer: Null или 0.0 - 5.0  #Крайняя оценка
 """
 create_assessments = """CREATE TABLE IF NOT EXISTS assessments(
   vkid INT PRIMARY KEY,
-  role TEXT PRIMARY KEY,
-  assessed_user INT PRIMARY KEY,
+  role TEXT,
+  assessed_user INT,
   assessment REAL
 )
 """
@@ -98,6 +96,6 @@ PK offer_id:
 """
 create_reports = """CREATE TABLE IF NOT EXISTS reports(
   vkid INT PRIMARY KEY,
-  offer_id INT PRIMARY KEY
+  offer_id INT
 )
 """
