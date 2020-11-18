@@ -11,33 +11,33 @@ TODO:
 REST ЗАПРОСЫ
 
 /user/
-    POST - при регистрации
+    POST - при регистрации (User user) 
 /user/<int:vkid>
-    GET - получить пользователя
+    GET - получить пользователя 
     PUT - изменение состояния пользователя
 /user/assess/<int:vkid>
-    POST - Поставить пользователю оценку 
+    POST - Поставить пользователю оценку (На стороне api)
         {as_who: “worker/employer”,
          mark: REAL}
 
 /offers/<str:gps>&<int:radius>
-    GET - запросить объявления в радиусе 
+    GET - запросить объявления в радиусе (На стороне api)
 /offers/owned/<int:vkid>
     GET - запросить опубликованные объявления по юзеру
 /offers/liked/<int:vkid>
     GET - запрос лайкнутых объявлений по юзеру
 
+/offer/
+    POST - опубликовать
 /offer/<int:id>
     GET - получить объявление по id
     PUT - изменить (описание, статус, приорет)
+    DELETE - удалить объявление
 /offer/like/<int:id>
     POST - добавить объявление в избранное
     DELETE - убрать объявление из избранного
-/offer/
-    POST - опубликовать
 /offer/report/<int:id>
     POST(offerId) - пожаловаться
-
 """
 
 from flask import Flask
