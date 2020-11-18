@@ -68,10 +68,10 @@ PK offer_id:
 TABLE-4 Assessments (Связь Пользователь - Оцененный пользователь)
 
 PK user: vkid
-PK assessment_role: worker, employer
+PK assessment_role: Worker, Employer
 PK assessed_user: vkid
-assessment: 0.0 - 5.0  #Крайняя оценка
-date:
+assessment_as_worker: Null или 0.0 - 5.0  #Крайняя оценка
+assessment_as_employer: Null или 0.0 - 5.0  #Крайняя оценка
 """
 
 """
