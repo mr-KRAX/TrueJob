@@ -58,6 +58,20 @@ class Offer:
           setattr(self, key, dictionary[key])
 
 
+@dataclass
+class Assessment:
+  user: str
+  assessed_user: str
+  assessment_as_worker: float # None or 0.0 - 5.0
+  assessment_as_employer: float # None or 0.0 - 5.0
+  def __init__(self, dictionary):
+      """
+      Конструктор через словарь
+      """
+      for key in dictionary:
+          setattr(self, key, dictionary[key])
+
+
 if __name__ == "__main__":
   dict_to_User = {'vkid': 'id', 'type': 'type', 'employer_rating': 0.2,
             'worker_rating': 0.3, 'status': 'st', 'is_blocked': 1}
