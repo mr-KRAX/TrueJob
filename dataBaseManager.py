@@ -15,8 +15,8 @@ from models import User, Offer, Assessment
 ### ---------------------------- START DATABASR ----------------------------
 
 
-database = ''  # Используемая база данных
-cursor = ''    # Объект взаимодействия с database
+database = None  # Используемая база данных
+cursor = None    # Объект взаимодействия с database
 
 
 """
@@ -25,35 +25,39 @@ DataBaseManager Interface
 # Общие функции
 
 
-def connectToDB():
+def connect():
   """
   Подключиться к базе данных
 
-  return: True, если пожключение успешно, False иначе
+  return: True, если подключение успешно, False иначе
   """
   global database
+  global cursor
   database = sqlite3.connect('truejob_database.db')
-  if database is None:
+  cursor = database.cursor()
+  if database is None or cursor is None:
     return False
   return True
 
-def closeConnectionWithDB():
+def closeConnect():
+  """
+  Закрыть соединение с базой данных.
+  """
   global database
   database.close()
 
-def initNewDB():
+def initNewConnect():
   """
   Инициировать новую бд и подключиться к ней
 
   return: True, если создание и подключение успешно, False иначе
   """
-  result = connectToDB()
+  result = connect()
   if result:
-    cursor = database.cursor()
-    cursor.execute(dbr.create_assessments)
-    cursor.execute(dbr.create_liked_offers)
+    cursor.execute(dbr.create_assessments_table)
+    cursor.execute(dbr.create_liked_offers_table)
     cursor.execute(dbr.create_offers_table)
-    cursor.execute(dbr.create_reports)
+    cursor.execute(dbr.create_reports_table)
     cursor.execute(dbr.create_users_table)
     database.commit()
     return True
@@ -67,10 +71,9 @@ def addUser(user: User):
 
   return: True добавление успешно, иначе False 
   """
-  cursor = database.cursor()
-  cursor.execute(f"SELECT vkid FROM users WHERE vkid = '{user.vkid}'")
+  cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (user.vkid, ))
   if cursor.fetchone() is None:
-    cursor.execute(f"INSERT INTO users VALUES (?, ?, ?, ?, ?, ?)",
+    cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?)",
                    (user.vkid, user.type, user.employer_rating,
                     user.worker_rating, user.status, user.is_blocked))
     database.commit()
@@ -84,17 +87,19 @@ def updateUser(user: User):
 
   return: True пользователь есть в бд и успешно обновлен, иначе False 
   """
-  cursor = database.cursor()
-  cursor.execute(f"SELECT vkid FROM users WHERE vkid = '{user.vkid}'")
+  cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (user.vkid, ))
   if cursor.fetchone() is not None:
-    cursor.execute(f"UPDATE users SET \
-        vkid = '{user.vkid}', \
-        type = '{user.type}', \
-        employer_rating = {user.employer_rating}, \
-        worker_rating = {user.worker_rating}, \
-        status = '{user.status}', \
-        is_blocked = {user.is_blocked} \
-        WHERE vkid = '{user.vkid}'")
+    cursor.execute("UPDATE users SET \
+        vkid = (?), \
+        type = (?), \
+        employer_rating = (?), \
+        worker_rating = (?), \
+        status = (?), \
+        is_blocked = (?) \
+        WHERE vkid = (?)",
+        (user.vkid, user.type, user.employer_rating,
+         user.worker_rating, user.status, user.is_blocked,
+         user.vkid))
     database.commit()
     return True
   return False
@@ -107,8 +112,7 @@ def getUser(vkid: str):
   return:  User с id == vkid, иначе None
   """
   user = None
-  cursor = database.cursor()
-  cursor.execute(f"SELECT vkid FROM users WHERE vkid = '{vkid}'")
+  cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (user.vkid, ))
   row = cursor.fetchone()
   if row is not None:
     """
@@ -128,10 +132,9 @@ def deleteUser(vkid: str):
 
   return: True, если успешно, иначе False
   """
-  cursor = database.cursor()
-  cursor.execute(f"SELECT vkid FROM users WHERE vkid = '{vkid}'")
+  cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (vkid, ))
   if cursor.fetchone() is not None:
-    cursor.execute(f"DELETE FROM users WHERE vkid = '{vkid}'")
+    cursor.execute("DELETE FROM users WHERE vkid = (?)", (vkid, ))
     database.commit()
     return True
   return False
@@ -281,10 +284,10 @@ def getAllAssessments(assessed_vkid: str):
 
   return [None]
 
-def printResult():
-  cursor = database.cursor()
-  for value in cursor.execute(f"SELECT * FROM users"):
-    print(value)
+# def printResult():
+#   cursor = database.cursor()
+#   for value in cursor.execute(f"SELECT * FROM users"):
+#     print(value)
 
 
 # if __name__ == "__main__":
@@ -297,7 +300,7 @@ def printResult():
 #   first_user = User(user_dict_1)
 #   second_user = User(user_dict_2)
 #   third_user = User(user_dict_3)
-#   initNewDB()
+#   initNewConnect()
 #   addUser(first_user)
 #   addUser(third_user)
 #   printResult()
@@ -307,4 +310,4 @@ def printResult():
 #   deleteUser("kdator")
 #   print("------------------------")
 #   printResult()
-#   closeConnectionWithDB()
+#   closeConnect()

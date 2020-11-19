@@ -64,8 +64,8 @@ TABLE-3 LikedOffers (Связь пользователь - понравивше�
 PK user: vkid
 PK offer_id: 
 """
-create_liked_offers = """CREATE TABLE IF NOT EXISTS likedOffers(
-  vkid INT PRIMARY KEY,
+create_liked_offers_table = """CREATE TABLE IF NOT EXISTS likedOffers(
+  vkid TEXT,
   offer_id INT
 )
 """
@@ -79,10 +79,10 @@ PK assessed_user: vkid
 assessment_as_worker: Null или 0.0 - 5.0  #Крайняя оценка
 assessment_as_employer: Null или 0.0 - 5.0  #Крайняя оценка
 """
-create_assessments = """CREATE TABLE IF NOT EXISTS assessments(
-  vkid INT PRIMARY KEY,
+create_assessments_table = """CREATE TABLE IF NOT EXISTS assessments(
+  vkid TEXT,
   role TEXT,
-  assessed_user INT,
+  assessed_user TEXT,
   assessment REAL
 )
 """
@@ -94,8 +94,8 @@ TABLE-5 Reports (Связь Пользователь - непристойное 
 PK user: vkid
 PK offer_id: 
 """
-create_reports = """CREATE TABLE IF NOT EXISTS reports(
-  vkid INT PRIMARY KEY,
+create_reports_table = """CREATE TABLE IF NOT EXISTS reports(
+  vkid TEXT,
   offer_id INT
 )
 """
