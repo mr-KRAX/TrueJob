@@ -287,24 +287,24 @@ def printResult():
     print(value)
 
 
-if __name__ == "__main__":
-  user_dict_1 = {"vkid": "kdator", "type": "user", "employer_rating": 5.0, 
-            "worker_rating": 4.5, "status": "regular", "is_blocked": 0}
-  user_dict_2 = {"vkid": "kdator", "type": "admin", "employer_rating": 3.3, 
-            "worker_rating": 2.2, "status": "super", "is_blocked": 1}
-  user_dict_3 = {"vkid": "_kr.alex_", "type": "admin", "employer_rating": 5.0,
-            "worker_rating": 5.0, "status": "Gold", "is_blocked": 0}
-  first_user = User(user_dict_1)
-  second_user = User(user_dict_2)
-  third_user = User(user_dict_3)
-  initNewDB()
-  addUser(first_user)
-  addUser(third_user)
-  printResult()
-  print("------------------------")
-  updateUser(second_user)
-  printResult()
-  deleteUser("kdator")
-  print("------------------------")
-  printResult()
-  closeConnectionWithDB()
+# if __name__ == "__main__":
+#   user_dict_1 = {"vkid": "kdator", "type": "user", "employer_rating": 5.0, 
+#             "worker_rating": 4.5, "status": "regular", "is_blocked": 0}
+#   user_dict_2 = {"vkid": "kdator", "type": "admin", "employer_rating": 3.3, 
+#             "worker_rating": 2.2, "status": "super", "is_blocked": 1}
+#   user_dict_3 = {"vkid": "_kr.alex_", "type": "admin", "employer_rating": 5.0,
+#             "worker_rating": 5.0, "status": "Gold", "is_blocked": 0}
+#   first_user = User(user_dict_1)
+#   second_user = User(user_dict_2)
+#   third_user = User(user_dict_3)
+#   initNewDB()
+#   addUser(first_user)
+#   addUser(third_user)
+#   printResult()
+#   print("------------------------")
+#   updateUser(second_user)
+#   printResult()
+#   deleteUser("kdator")
+#   print("------------------------")
+#   printResult()
+#   closeConnectionWithDB()

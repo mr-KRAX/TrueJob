@@ -71,15 +71,8 @@ users = [
     },
 ]
 
-class Offers(Resource):
-  def __init__(self):
-      self.parser = reqparse.RequestParser()
-      self.parser.add_argument('gps', type = str, required = True, 
-                               help = 'GPS was not specified', location='json')
-      self.parser.add_argument('radius', type = int, required = True,
-                               help = 'Radius was not specified', location='json')
-      super(Offers, self).__init__()
 
+class Offers(Resource):
   def get(self, coordinates, radius):
     """
     Запросить объявления в радиусе
@@ -87,19 +80,17 @@ class Offers(Resource):
     return "Offers", 200
 
 
-api.add_resource(Offers, "/offers/<string:coordinates>/<int:radius>", endpoint="offers")
+api.add_resource( 
+    Offers, "/offers/<string:coordinates>/<int:radius>", endpoint="offers")
 # api.add_resource(Offers, "/offers/", endpoint="offers")
 
 
 class OffersOwned(Resource):
-  def __init__(self):
-      self.parser = reqparse.RequestParser()
-      self.parser.add_argument('vkid', type = int, required = True,
-                               help = 'VKID was not specified', location='json')
-      super(OffersOwned, self).__init__()
-
   def get(self, vkid):
-      pass
+    """
+    Запросить опубликованные объявления по юзеру
+    """
+    return "OffersOwned", 200
 
 
 api.add_resource(OffersOwned, "/offers/owned/<int:vkid>", endpoint="owned")
@@ -173,14 +164,10 @@ api.add_resource(OfferReport, "/offer/report/<int:id>", endpoint="report")
 
 
 class UserAdd(Resource):
-  def __init__():
-    self.parser = reqparse.RequestParser()
-    self.parser.add_argument("vkid", type = int, location = 'json')
-    self.parser.add_argument("type", type = str, location = 'json')
-    self.parser.add_argument("worker_rating", type = double, location = 'json')
-    super(UserAdd, self).__init__()
-
   def post(self):
+    """
+    Зарегистрировать нового пользователя
+    """
     return "UserAdd", 200
 
 
