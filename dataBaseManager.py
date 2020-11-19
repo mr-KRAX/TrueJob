@@ -6,9 +6,11 @@ TODO:
   [ ] !!! Написать все запросы
   [+] !!! Разработать и реализовать интерфейс модуля
 """
+import sqlite3
+from sqlite3 import Error
+
 import dataBaseReqs as dbr
 from models import User, Offer, Assessment
-import sqlite3
 
 
 database = None  # Используемая база данных
@@ -21,23 +23,42 @@ DataBaseManager Interface
 # Общие функции
 
 
-def connectToDB():
+def connect():
   """
   Подключиться к базе данных
 
-  return: True, если пожключение успешно, False иначе
+  return: True, если подключение успешно, False иначе
   """
+  global database
+  global cursor
+  database = sqlite3.connect('truejob_database.db')
+  cursor = database.cursor()
+  if database is None or cursor is None:
+    return False
+  return True
 
-  return False
+def closeConnect():
+  """
+  Закрыть соединение с базой данных.
+  """
+  global database
+  database.close()
 
-
-def initNewDB():
+def initNewConnect():
   """
   Инициировать новую бд и подключиться к ней
 
-  return: True, если создание и пожключение успешно, False иначе
+  return: True, если создание и подключение успешно, False иначе
   """
-
+  result = connect()
+  if result:
+    cursor.execute(dbr.create_assessments_table)
+    cursor.execute(dbr.create_liked_offers_table)
+    cursor.execute(dbr.create_offers_table)
+    cursor.execute(dbr.create_reports_table)
+    cursor.execute(dbr.create_users_table)
+    database.commit()
+    return True
   return False
 
 
@@ -48,6 +69,13 @@ def addUser(user: User):
 
   return: True добавление успешно, иначе False 
   """
+  cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (user.vkid, ))
+  if cursor.fetchone() is None:
+    cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?)",
+                   (user.vkid, user.type, user.employer_rating,
+                    user.worker_rating, user.status, user.is_blocked))
+    database.commit()
+    return True
   return False
 
 
@@ -57,6 +85,21 @@ def updateUser(user: User):
 
   return: True пользователь есть в бд и успешно обновлен, иначе False 
   """
+  cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (user.vkid, ))
+  if cursor.fetchone() is not None:
+    cursor.execute("UPDATE users SET \
+        vkid = (?), \
+        type = (?), \
+        employer_rating = (?), \
+        worker_rating = (?), \
+        status = (?), \
+        is_blocked = (?) \
+        WHERE vkid = (?)",
+        (user.vkid, user.type, user.employer_rating,
+         user.worker_rating, user.status, user.is_blocked,
+         user.vkid))
+    database.commit()
+    return True
   return False
 
 
@@ -66,8 +109,19 @@ def getUser(vkid: str):
 
   return:  User с id == vkid, иначе None
   """
-
-  return None
+  user = None
+  cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (user.vkid, ))
+  row = cursor.fetchone()
+  if row is not None:
+    """
+    cursor.description возвращает имена столбцов из последнего запроса.
+    он возвращает кортеж из 7 значений, где последние 6 = None.
+    на нулевой позиции лежит название столбца, поэтому его и используем для
+    формирования словаря.
+    """
+    rowDict = dict(zip([column[0] for column in cursor.description], row))
+    user = User(rowDict)
+  return user
 
 
 def deleteUser(vkid: str):
@@ -76,7 +130,11 @@ def deleteUser(vkid: str):
 
   return: True, если успешно, иначе False
   """
-
+  cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (vkid, ))
+  if cursor.fetchone() is not None:
+    cursor.execute("DELETE FROM users WHERE vkid = (?)", (vkid, ))
+    database.commit()
+    return True
   return False
 
 
@@ -223,3 +281,31 @@ def getAllAssessments(assessed_vkid: str):
   """
 
   return [None]
+
+# def printResult():
+#   cursor = database.cursor()
+#   for value in cursor.execute(f"SELECT * FROM users"):
+#     print(value)
+
+
+# if __name__ == "__main__":
+#   user_dict_1 = {"vkid": "kdator", "type": "user", "employer_rating": 5.0, 
+#             "worker_rating": 4.5, "status": "regular", "is_blocked": 0}
+#   user_dict_2 = {"vkid": "kdator", "type": "admin", "employer_rating": 3.3, 
+#             "worker_rating": 2.2, "status": "super", "is_blocked": 1}
+#   user_dict_3 = {"vkid": "_kr.alex_", "type": "admin", "employer_rating": 5.0,
+#             "worker_rating": 5.0, "status": "Gold", "is_blocked": 0}
+#   first_user = User(user_dict_1)
+#   second_user = User(user_dict_2)
+#   third_user = User(user_dict_3)
+#   initNewConnect()
+#   addUser(first_user)
+#   addUser(third_user)
+#   printResult()
+#   print("------------------------")
+#   updateUser(second_user)
+#   printResult()
+#   deleteUser("kdator")
+#   print("------------------------")
+#   printResult()
+#   closeConnect()

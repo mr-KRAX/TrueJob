@@ -55,6 +55,7 @@ priority TEXT,
 time_created TEXT,
 views_counter INT,
 likes_counter INT
+)
 """
 
 """
@@ -62,6 +63,11 @@ TABLE-3 LikedOffers (Связь пользователь - понравивше�
 
 PK user: vkid
 PK offer_id: 
+"""
+create_liked_offers_table = """CREATE TABLE IF NOT EXISTS likedOffers(
+  vkid TEXT,
+  offer_id INT
+)
 """
 
 """
@@ -73,6 +79,14 @@ PK assessed_user: vkid
 assessment_as_worker: Null или 0.0 - 5.0  #Крайняя оценка
 assessment_as_employer: Null или 0.0 - 5.0  #Крайняя оценка
 """
+create_assessments_table = """CREATE TABLE IF NOT EXISTS assessments(
+  vkid TEXT,
+  role TEXT,
+  assessed_user TEXT,
+  assessment REAL
+)
+"""
+
 
 """
 TABLE-5 Reports (Связь Пользователь - непристойное объявление)
@@ -80,7 +94,8 @@ TABLE-5 Reports (Связь Пользователь - непристойное 
 PK user: vkid
 PK offer_id: 
 """
-
-
-
-
+create_reports_table = """CREATE TABLE IF NOT EXISTS reports(
+  vkid TEXT,
+  offer_id INT
+)
+"""
