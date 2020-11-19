@@ -12,8 +12,6 @@ from sqlite3 import Error
 import dataBaseReqs as dbr
 from models import User, Offer, Assessment
 
-### ---------------------------- START DATABASR ----------------------------
-
 
 database = None  # Используемая база данных
 cursor = None    # Объект взаимодействия с database
