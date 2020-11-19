@@ -1,0 +1,9 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# sqlite3 database files
+*.sqlite3
+*.db
+
+# VSCode files
+.vscode
