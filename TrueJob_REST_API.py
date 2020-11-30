@@ -11,20 +11,73 @@ TODO:
 REST ЗАПРОСЫ
 
 /user/
-    POST - при регистрации (User user) 
-/user/<int:vkid>
-    GET - получить пользователя 
-    PUT - изменение состояния пользователя
-/user/assess/<int:vkid>
-    POST - Поставить пользователю оценку (На стороне api)
-        {as_who: “worker/employer”,
-         mark: REAL}
+[+] POST - при регистрации (User user) 
+      '{"vkid":str,                 # Обязательный параметр
+        "type":"Admin"/"Regular"}'  # Обязательный параметр
+      Return:
+        Code:
+          200/400
+        User:
+          {
+          "vkid": "3",
+          "type": "Regular",
+          "employer_rating": 0.0,
+          "worker_rating": 0.0,
+          "status": "Silver",
+          "is_blocked": 0
+          }
+          или
+          ["message"]
+
+/user/<vkid>
+[+] GET - получить пользователя
+      Return:
+        Code:
+          200/404
+        User:
+          {
+          "vkid": "3",
+          "type": "Regular",
+          "employer_rating": 0.0,
+          "worker_rating": 0.0,
+          "status": "Silver",
+          "is_blocked": 0
+          }
+          или
+          ["message"]
+
+[+] PUT - изменение состояния пользователя
+      Тело запроса:
+      '{"type":"Admin"/"Regular",             # Не обязательный параметр
+        "status":"Silver"/"Gold"/"Platinum",  # Не обязательный параметр
+        "is_blocked":0/1}'                    # Не обязательный параметр
+      Return:
+        Code:
+          200/404/400
+        User:
+          {
+          "vkid": "3",
+          "type": "Regular",
+          "employer_rating": 0.0,
+          "worker_rating": 0.0,
+          "status": "Silver",
+          "is_blocked": 0
+          }
+          или
+          ["message"]
+
+/user/assess/<vkid>
+[-] POST - Поставить пользователю оценку (На стороне api)
+        BasicAuth: vkid:*ничего*
+        {as_who: “worker/employer”, # Обязательный параметр
+         mark: REAL}                # Обязательный параметр
 
 /offers/<str:gps>&<int:radius>
-    GET - запросить объявления в радиусе (На стороне api)
-/offers/owned/<int:vkid>
+[-] GET - запросить объявления в радиусе (На стороне api)
+
+/offers/owned/<vkid>
     GET - запросить опубликованные объявления по юзеру
-/offers/liked/<int:vkid>
+/offers/liked/<vkid>
     GET - запрос лайкнутых объявлений по юзеру
 
 /offer/
@@ -41,36 +94,41 @@ REST ЗАПРОСЫ
 """
 
 from flask import Flask
-from flask_restful import Api, Resource, reqparse
+from flask_restful import Api, Resource, reqparse, request
+from flask_httpauth import HTTPBasicAuth
 
+import dataBaseManager as DB
+import models
+# from tools import *
 
+auth = HTTPBasicAuth()
 app = Flask(__name__)
 api = Api(app)
 
-# NOTE: осторожно хардкод
-users = [
-    {
-        "vkid": 1,
-        "type": "Regular",
-        "worker_rating": 5.0
-    },
-    {
-        "vkid": 2,
-        "type": "Admin",
-        "worker_rating": 1.0
-    },
-    {
-        "vkid": 3,
-        "type": "Regular",
-        "worker_rating": 3.4
-    },
-    {
-        "vkid": 4,
-        "type": "Regular",
-        "worker_rating": 3.7
-    },
-]
 
+logOn = False
+def logMsg(msg):
+  global logOn
+  if not (logOn):
+    return
+  print("LOG: " + str(msg))
+
+
+
+@auth.get_password
+def get_password(vkid):
+  logMsg("vkid authorized: " + vkid)
+  return ""
+  # for u in users:
+  #   print(u.get("vkid"))
+  #   if u.get("vkid") == vkid:
+  #     print("success")
+  #     return "pass"
+  # return None
+
+@auth.error_handler
+def unauthorized():
+    return {'error': 'Unauthorized access'}, 401
 
 class Offers(Resource):
   def get(self, coordinates, radius):
@@ -93,7 +151,7 @@ class OffersOwned(Resource):
     return "OffersOwned", 200
 
 
-api.add_resource(OffersOwned, "/offers/owned/<int:vkid>", endpoint="owned")
+api.add_resource(OffersOwned, "/offers/owned/<vkid>", endpoint="owned")
 
 
 class OffersLiked(Resource):
@@ -104,7 +162,7 @@ class OffersLiked(Resource):
     return "OffersLiked", 200
 
 
-api.add_resource(OffersLiked, "/offers/liked/<int:vkid>", endpoint="liked")
+api.add_resource(OffersLiked, "/offers/liked/<vkid>", endpoint="liked")
 
 
 class Offer(Resource):
@@ -164,31 +222,71 @@ api.add_resource(OfferReport, "/offer/report/<int:id>", endpoint="report")
 
 
 class UserAdd(Resource):
+  def __init__(self):
+    self.reqparse = reqparse.RequestParser()
+    self.reqparse.add_argument('vkid', type=str, required=True, location='json')
+    self.reqparse.add_argument('type', type=str, required=True, location='json')
+    super(UserAdd, self).__init__()
+
+  # @auth.login_required
   def post(self):
     """
     Зарегистрировать нового пользователя
     """
-    return "UserAdd", 200
-
+    logMsg("AddUser req:" + str(dict(self.reqparse.parse_args())))
+    try:
+      user = models.User(**self.reqparse.parse_args())
+    except ValueError as e:
+      return e.args, 400
+    logMsg("User" + str(user))
+    if DB.addUser(user):
+      return user.asDict(), 200
+    return ["User exists"], 400
 
 api.add_resource(UserAdd, "/user/")
 
 
 class User(Resource):
+  def __init__(self):
+    self.reqparse = reqparse.RequestParser()
+    self.reqparse.add_argument('type', type=str, location='json')
+    self.reqparse.add_argument('status', type=str, location='json')
+    self.reqparse.add_argument('is_blocked', type=str, location='json')
+    super(User, self).__init__()
+
+  # @auth.login_required
   def get(self, vkid):
     """
     Получить пользователя
     """
-    return "User get", 200
+    logMsg("GET User: " + str(vkid))
+    user = DB.getUser(str(vkid))
+    logMsg(user)
+    if user is None:
+      return ["User not found"], 404
+    return user.asDict(), 200
 
+  # @auth.login_required
   def put(self, vkid):
     """
     Изменить пользователя
     """
-    return "User put", 200
+    logMsg("PUT User: "+ str(vkid) +" req: " + str(self.reqparse.parse_args()))
+    user = DB.getUser(vkid)
+    if user is None:
+      return ["User not found"], 404
+    args = dict(self.reqparse.parse_args())
+    try:
+      for field, value in args.items():
+        if value != None:
+          user.setAttr(field, value)
+    except ValueError:
+      return ["Invalid status value " + str(value)], 400
+    if (DB.updateUser(user)):
+      return user.asDict(), 200
+    return ["Internal error"], 500
 
-
-api.add_resource(User, "/user/<int:vkid>", endpoint="user")
+api.add_resource(User, "/user/<vkid>", endpoint="user")
 
 
 class UserAssess(Resource):
@@ -206,7 +304,9 @@ class UserAssess(Resource):
     return "UserAssess post", 200
 
 
-api.add_resource(UserAssess, "/user/assess/<int:vkid>", endpoint="assess")
+api.add_resource(UserAssess, "/user/assess/<vkid>", endpoint="assess")
 
 if __name__ == '__main__':
+    DB.connect()
+    DB.initNewConnect()
     app.run(debug=True)

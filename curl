@@ -1,0 +1,19 @@
+POST user:
+curl -u 1234: \
+-i -H 'Content-Type: application/json' http://127.0.0.1:5000/user/ \
+-X POST \
+-d '{"vkid":str, "type":"Admin"/"Regular"}'
+
+GET user:
+curl \
+-u 1: \
+-i -H 'Content-Type: application/json' http://127.0.0.1:5000/user/2
+
+
+PUT user:
+curl\
+ -u 1234: \
+ -i -H 'Content-Type: application/json' http://127.0.0.1:5000/user/1 \
+ -X PUT \
+ -d '{"status":"Gold"}'
+

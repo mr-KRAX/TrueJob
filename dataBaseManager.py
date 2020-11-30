@@ -15,6 +15,7 @@ from models import User, Offer, Assessment
 
 database = None  # Используемая база данных
 cursor = None    # Объект взаимодействия с database
+databaseName = 'truejob_database.db'
 
 
 """
@@ -67,16 +68,18 @@ def addUser(user: User):
   """
   Добавить пользователя в бд
 
-  return: True добавление успешно, иначе False 
+  return: True добавление пользователя с новым vkid успешно, иначе False 
   """
-  cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (user.vkid, ))
-  if cursor.fetchone() is None:
-    cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?)",
-                   (user.vkid, user.type, user.employer_rating,
-                    user.worker_rating, user.status, user.is_blocked))
-    database.commit()
-    return True
-  return False
+  with sqlite3.connect(databaseName) as db:
+    cursor = db.cursor()
+    cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (user.vkid, ))
+    if cursor.fetchone() is None:
+      cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?)",
+                    (user.vkid, user.type, user.employer_rating,
+                      user.worker_rating, user.status, user.is_blocked))
+      db.commit()
+      return True
+    return False
 
 
 def updateUser(user: User):
@@ -85,22 +88,24 @@ def updateUser(user: User):
 
   return: True пользователь есть в бд и успешно обновлен, иначе False 
   """
-  cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (user.vkid, ))
-  if cursor.fetchone() is not None:
-    cursor.execute("UPDATE users SET \
-        vkid = (?), \
-        type = (?), \
-        employer_rating = (?), \
-        worker_rating = (?), \
-        status = (?), \
-        is_blocked = (?) \
-        WHERE vkid = (?)",
-        (user.vkid, user.type, user.employer_rating,
-         user.worker_rating, user.status, user.is_blocked,
-         user.vkid))
-    database.commit()
-    return True
-  return False
+  with sqlite3.connect(databaseName) as db:
+    cursor = db.cursor()
+    cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (user.vkid, ))
+    if cursor.fetchone() is not None:
+      cursor.execute("UPDATE users SET \
+          vkid = (?), \
+          type = (?), \
+          employer_rating = (?), \
+          worker_rating = (?), \
+          status = (?), \
+          is_blocked = (?) \
+          WHERE vkid = (?)",
+          (user.vkid, user.type, user.employer_rating,
+          user.worker_rating, user.status, user.is_blocked,
+          user.vkid))
+      db.commit()
+      return True
+    return False
 
 
 def getUser(vkid: str):
@@ -109,19 +114,23 @@ def getUser(vkid: str):
 
   return:  User с id == vkid, иначе None
   """
-  user = None
-  cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (user.vkid, ))
-  row = cursor.fetchone()
-  if row is not None:
-    """
-    cursor.description возвращает имена столбцов из последнего запроса.
-    он возвращает кортеж из 7 значений, где последние 6 = None.
-    на нулевой позиции лежит название столбца, поэтому его и используем для
-    формирования словаря.
-    """
-    rowDict = dict(zip([column[0] for column in cursor.description], row))
-    user = User(rowDict)
-  return user
+  with sqlite3.connect(databaseName) as db:
+    cursor = db.cursor()
+    user = None
+
+    cursor.execute("SELECT * FROM users WHERE vkid = (?)", (vkid, ))
+    row = cursor.fetchone()
+    if row is not None:
+      """
+      cursor.description возвращает имена столбцов из последнего запроса.
+      он возвращает кортеж из 7 значений, где последние 6 = None.
+      на нулевой позиции лежит название столбца, поэтому его и используем для
+      формирования словаря.
+      """
+      rowDict = dict(zip([column[0] for column in cursor.description], row))
+      print("User", rowDict)
+      user = User(**rowDict)
+    return user
 
 
 def deleteUser(vkid: str):
@@ -130,12 +139,14 @@ def deleteUser(vkid: str):
 
   return: True, если успешно, иначе False
   """
-  cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (vkid, ))
-  if cursor.fetchone() is not None:
-    cursor.execute("DELETE FROM users WHERE vkid = (?)", (vkid, ))
-    database.commit()
-    return True
-  return False
+  with sqlite3.connect(databaseName) as db:
+    cursor = db.cursor()
+    cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (vkid, ))
+    if cursor.fetchone() is not None:
+      cursor.execute("DELETE FROM users WHERE vkid = (?)", (vkid, ))
+      database.commit()
+      return True
+    return False
 
 
 # Функции связанные с Offer
