@@ -159,7 +159,7 @@ def addOffer(offer: Offer):
           (offer.offer_id, offer.name, offer.description, offer.price, offer.exp_date,
           offer.location, offer.status, offer.owner, offer.priority, offer.time_created,
           offer.views_counter, offer.likes_counter))
-      database.commit()
+      db.commit()
       return True
     return False
 
@@ -185,7 +185,7 @@ def updateOffer(offer: Offer):
         (offer.offer_id, offer.name, offer.description, offer.price, offer.exp_date,
         offer.location, offer.status, offer.owner, offer.priority, offer.time_created,
         offer.views_counter, offer.likes_counter, offer.offer_id))
-      database.commit()
+      db.commit()
       return True
     return False
 
@@ -225,7 +225,7 @@ def deleteOffer(id: int):
     cursor.execute("SELECT offer_id FROM offers WHERE offer_id = (?)", (id, ))
     if cursor.fetchone() is not None:
       cursor.execute("DELETE FROM offers WHERE offer_id = (?)", (id, ))
-      database.commit()
+      db.commit()
       return True
     return False
 
