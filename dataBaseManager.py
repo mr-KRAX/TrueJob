@@ -75,8 +75,8 @@ def addUser(user: User):
     cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (user.vkid, ))
     if cursor.fetchone() is None:
       cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?)",
-                    (user.vkid, user.type, user.employer_rating,
-                      user.worker_rating, user.status, user.is_blocked))
+          (user.vkid, user.type, user.employer_rating,
+           user.worker_rating, user.status, user.is_blocked))
       db.commit()
       return True
     return False
@@ -93,12 +93,9 @@ def updateUser(user: User):
     cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (user.vkid, ))
     if cursor.fetchone() is not None:
       cursor.execute("UPDATE users SET \
-          vkid = (?), \
-          type = (?), \
-          employer_rating = (?), \
-          worker_rating = (?), \
-          status = (?), \
-          is_blocked = (?) \
+          vkid = (?), type = (?), \
+          employer_rating = (?), worker_rating = (?), \
+          status = (?), is_blocked = (?) \
           WHERE vkid = (?)",
           (user.vkid, user.type, user.employer_rating,
           user.worker_rating, user.status, user.is_blocked,
@@ -116,8 +113,6 @@ def getUser(vkid: str):
   """
   with sqlite3.connect(databaseName) as db:
     cursor = db.cursor()
-    user = None
-
     cursor.execute("SELECT * FROM users WHERE vkid = (?)", (vkid, ))
     row = cursor.fetchone()
     if row is not None:
@@ -128,9 +123,9 @@ def getUser(vkid: str):
       формирования словаря.
       """
       rowDict = dict(zip([column[0] for column in cursor.description], row))
-      print("User", rowDict)
       user = User(**rowDict)
-    return user
+      return user
+    return None
 
 
 def deleteUser(vkid: str):
@@ -144,7 +139,7 @@ def deleteUser(vkid: str):
     cursor.execute("SELECT vkid FROM users WHERE vkid = (?)", (vkid, ))
     if cursor.fetchone() is not None:
       cursor.execute("DELETE FROM users WHERE vkid = (?)", (vkid, ))
-      database.commit()
+      db.commit()
       return True
     return False
 
