@@ -329,6 +329,7 @@ def getAllAssessments(assessed_vkid: str):
       return list_of_assessment
   return None
 
+
 # def printResult():
 #   cursor = database.cursor()
 #   for value in cursor.execute(f"SELECT * FROM users"):
