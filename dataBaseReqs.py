@@ -74,16 +74,15 @@ create_liked_offers_table = """CREATE TABLE IF NOT EXISTS likedOffers(
 TABLE-4 Assessments (Связь Пользователь - Оцененный пользователь)
 
 PK user: vkid
-PK assessment_role: Worker, Employer
 PK assessed_user: vkid
 assessment_as_worker: Null или 0.0 - 5.0  #Крайняя оценка
 assessment_as_employer: Null или 0.0 - 5.0  #Крайняя оценка
 """
 create_assessments_table = """CREATE TABLE IF NOT EXISTS assessments(
-  vkid TEXT,
-  role TEXT,
+  user TEXT,
   assessed_user TEXT,
-  assessment REAL
+  assessment_as_worker REAL,
+  assessment_as_employer REAL
 )
 """
 

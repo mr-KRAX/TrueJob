@@ -254,13 +254,21 @@ def addReport(vkid: str, reported_vkid: str):
   return False
 
 
-def addAssessment(vkid: str, assessed_vkid: str, assessment_as_worker: float = None, assessment_as_employer: float = None):
+def addAssessment(assessment: Assessment):
   """
   Добавить запись об оценке в таблицу TABLE-4 Assessments
 
   return: True, если добавление успешно, иначе False
   """
-
+  with sqlite3.connect(databaseName) as db:
+    cursor.execute("SELECT user, assessed_user FROM assessments \
+        WHERE user = (?) AND assessed_user = (?)", (assessment.user, assessment.assessed_user))
+    if cursor.fetchone() is None:
+      cursor.execute("INSERT INTO assessments VALUES (?, ?, ?, ?)",
+          (assessment.user, assessment.assessed_user,
+           assessment.assessment_as_worker, assessment.assessment_as_employer))
+      db.commit()
+      return True
   return False
 
 
@@ -270,7 +278,21 @@ def getAssessment(vkid: str, assessed_vkid: str):
 
   return: Assesment, если такая оценка есть, иначе None
   """
-
+  with sqlite3.connect(databaseName) as db:
+    cursor.execute("SELECT * FROM assessments \
+        WHERE user = (?) AND assessed_user = (?)",
+        (vkid, assessed_vkid))
+    row = cursor.fetchone()
+    if row is not None:
+      """
+      cursor.description возвращает имена столбцов из последнего запроса.
+      он возвращает кортеж из 7 значений, где последние 6 = None.
+      на нулевой позиции лежит название столбца, поэтому его и используем для
+      формирования словаря.
+      """
+      rowDict = dict(zip([column[0] for column in cursor.description], row))
+      assessment = Assessment(**rowDict)
+      return assessment
   return None
 
 
@@ -280,7 +302,20 @@ def updateAsssessment(assessment: Assessment):
 
   return: True, если такая есть и обновление успешно, иначе False
   """
-
+  with sqlite3.connect(databaseName) as db:
+    cursor.execute("SELECT user, assessed_user FROM assessments \
+        WHERE user = (?) AND assessed_user = (?)",
+        (assessment.user, assessment.assessed_user))
+    if cursor.fetchone() is not None:
+      cursor.execute("UPDATE assessments SET \
+          user = (?), assessed_user = (?), \
+          assessment_as_worker = (?), assessment_as_employer = (?) \
+          WHERE user = (?) AND assessed_user = (?)",
+          (assessment.user, assessment.assessed_user,
+           assessment.assessment_as_worker, assessment.assessment_as_employer,
+           assessment.user, assessment.assessed_user))
+          db.commit()
+          return True
   return False
 
 
@@ -290,8 +325,14 @@ def getAllAssessments(assessed_vkid: str):
 
   return: [Assessment, ...] все оценки, если есть, иначе None
   """
-
-  return [None]
+  with sqlite3.connect(databaseName) as db:
+    cursor.execute("SELECT * FROM assessments \
+        WHERE assessed_user = (?)",
+        (assessed_vkid, ))
+    if cursor.fetchall() is not None:
+      list_of_assessment = [list(assessment) for assessment in cursor.fetchall()]
+      return list_of_assessment
+  return None
 
 # def printResult():
 #   cursor = database.cursor()
