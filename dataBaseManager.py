@@ -221,8 +221,7 @@ def getAllOffers():
   with sqlite3.connect(databaseName) as db:
     cursor = db.cursor()
     cursor.execute("SELECT * FROM offers")
-    rows = cursor.fetchall()
-    if rows is not None:
+    if cursor.fetchall() is not None:
       list_of_all_offers = [list(offer) for offer in cursor.fetchall()]
       return list_of_all_offers
   return None
@@ -238,7 +237,7 @@ def addOfferLike(vkid: str, offer_id: int):
   with sqlite3.connect(databaseName) as db:
     cursor = db.cursor()
     cursor.execute("SELECT * FROM likedOffers \
-        WHERE vkid = (?), offer_id = (?)", (vkid, offer_id))
+        WHERE vkid = (?) AND offer_id = (?)", (vkid, offer_id))
     if cursor.fetchone() is None:
       cursor.execute("INSERT INTO likedOffers VALUES (?, ?)", (vkid, offer_id))
       db.commit()
@@ -255,7 +254,7 @@ def deleteOfferLike(vkid: str, offer_id: int):
   with sqlite3.connect(databaseName) as db:
     cursor = db.cursor()
     cursor.execute("SELECT * FROM likedOffers \
-        WHERE vkid = (?), offer_id = (?)", (vkid, offer_id))
+        WHERE vkid = (?) AND offer_id = (?)", (vkid, offer_id))
     if cursor.fetchone() is not None:
       cursor.execute("DELETE FROM likedOffers \
            WHERE vkid = (?), offer_id = (?)", (vkid, offer_id))
@@ -273,7 +272,7 @@ def addReport(vkid: str, reported_vkid: str):
   with sqlite3.connect(databaseName) as db:
     cursor = db.cursor()
     cursor.execute("SELECT * FROM reports \
-        WHERE user = (?), offer_id = (?)", (vkid, reported_vkid))
+        WHERE user = (?) AND offer_id = (?)", (vkid, reported_vkid))
     if cursor.fetchone() is None:
       cursor.execute("INSERT INTO reports VALUES (?, ?)", (vkid, reported_vkid))
       db.commit()
