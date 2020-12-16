@@ -1,19 +1,25 @@
-POST user:
+POST1 user:
 curl -u 1234: \
 -i -H 'Content-Type: application/json' http://127.0.0.1:5000/user/ \
 -X POST \
--d '{"vkid":str, "type":"Admin"/"Regular"}'
+-d '{"vkid":str, "type":"Admin"}'
 
-GET user:
+POST2 user:
+curl -u 1234: \
+-i -H 'Content-Type: application/json' http://127.0.0.1:5000/user/ \
+-X POST \
+-d '{"vkid":vkid1, "type":"Admin"}'
+
+GET1 user:
 curl \
 -u 1: \
 -i -H 'Content-Type: application/json' http://127.0.0.1:5000/user/2
 
 
-PUT user:
+PUT1 user:
 curl\
  -u 1234: \
- -i -H 'Content-Type: application/json' http://127.0.0.1:5000/user/1 \
+ -i -H 'Content-Type: application/json' http://127.0.0.1:5000/user/vkid1 \
  -X PUT \
  -d '{"status":"Gold"}'
 
