@@ -181,6 +181,7 @@ REST ЗАПРОСЫ
 from flask import Flask
 from flask_restful import Api, Resource, reqparse, request
 from flask_httpauth import HTTPBasicAuth
+from flask_cors import CORS
 
 import dataBaseManager as DB
 import models
@@ -189,6 +190,7 @@ import models
 auth = HTTPBasicAuth()
 app = Flask(__name__)
 api = Api(app)
+CORS(app)
 
 
 logOn = False
