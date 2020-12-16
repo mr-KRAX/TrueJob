@@ -253,12 +253,19 @@ def getLikedOffersByUser(vkid: str):
   """
   Получить лайкнутые пользователем с vkid объявления 
   """
-
-  req = "SELECT Offers.* FROM LikedOffers, Offers \
-          WHERE LikedOffers.user = vkid \
-          AND LikedOffers.offer_id = Offers.offer_id"
-
-  return [None]
+  with sqlite3.connect(databaseName) as db:
+    cursor = db.cursor()
+    cursor.execute("SELECT offers.* FROM offers, likedOffers \
+        WHERE likedOffers.vkid = (?) AND likedOffers.offer_id = offers.offer_id",
+        (vkid, ))
+    rows = cursor.fetchall()
+    if rows is not None:
+      list_of_liked_offers = list()
+      for row in rows:
+        rowDict = dict(zip([column[0] for column in cursor.description], row))
+        list_of_liked_offers.append(Offer(**rowDict))
+      return list_of_liked_offers
+  return None
 
 
 def getAllOffers():
@@ -287,7 +294,14 @@ def addOfferLike(vkid: str, offer_id: int):
 
   return: True, если добавление успешно, иначе False
   """
-
+  with sqlite3.connect(databaseName) as db:
+    cursor = db.cursor()
+    cursor.execute("SELECT vkid, offer_id FROM likedOffers \
+        WHERE vkid = (?) AND offer_id = (?)", (vkid, offer_id))
+    if cursor.fetchone() is None:
+      cursor.execute("INSERT INTO likedOffers VALUES (?, ?)", (vkid, offer_id))
+      db.commit()
+      return True
   return False
 
 
@@ -297,17 +311,32 @@ def deleteOfferLike(vkid: str, offer_id: int):
 
   return: True, если запись была и успешно удалена, иначе False
   """
-
+  with sqlite3.connect(databaseName) as db:
+    cursor = db.cursor()
+    cursor.execute("SELECT vkid, offer_id FROM likedOffers \
+        WHERE vkid = (?) AND offer_id = (?)", (vkid, offer_id))
+    if cursor.fetchone() is not None:
+      cursor.execute("DELETE FROM likedOffers \
+           WHERE vkid = (?), offer_id = (?)", (vkid, offer_id))
+      db.commit()
+      return True
   return False
 
 
-def addReport(vkid: str, reported_vkid: str):
+def addReport(vkid: str, reported_offer: int):
   """
   Добавить запись о репорте в таблицу TABLE-5 Reports
 
   return: True, если добавление успешно, иначе False
   """
-
+  with sqlite3.connect(databaseName) as db:
+    cursor = db.cursor()
+    cursor.execute("SELECT vkid, offer_id FROM reports \
+        WHERE vkid = (?) AND offer_id = (?)", (vkid, reported_offer))
+    if cursor.fetchone() is None:
+      cursor.execute("INSERT INTO reports VALUES (?, ?)", (vkid, reported_offer))
+      db.commit()
+      return True
   return False
 
 
