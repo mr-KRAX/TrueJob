@@ -172,7 +172,7 @@ def updateOffer(offer: Offer):
   """
   with sqlite3.connect(databaseName) as db:
     cursor = db.cursor()
-    cursor.execute("SELECT offer_id FROM offers WHERE offet_id = (?)", (offer.offer_id, ))
+    cursor.execute("SELECT offer_id FROM offers WHERE offer_id = (?)", (offer.offer_id, ))
     if cursor.fetchone() is not None:
       cursor.execute("UPDATE offers SET \
         offer_id = (?), name = (?), \
@@ -243,7 +243,8 @@ def getOffersByUser(vkid: str):
     if rows is not None:
       list_of_offers = list()
       for row in rows:
-        list_of_offers.append(list(row))
+        rowDict = dict(zip([column[0] for column in cursor.description], row))
+        list_of_offers.append(Offer(**rowDict))
       return list_of_offers
     return None
 
@@ -266,8 +267,17 @@ def getAllOffers():
 
   return: [Offer, ...] Все объявления, если есть, иначе None
   """
-
-  return [None]
+  with sqlite3.connect(databaseName) as db:
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM offers")
+    rows = cursor.fetchall()
+    if rows is not None:
+      list_of_offers = list()
+      for row in rows:
+        rowDict = dict(zip([column[0] for column in cursor.description], row))
+        list_of_offers.append(Offer(**rowDict))
+      return list_of_offers
+    return None
 
 
 # Функции связанные с Like & Report & Assessment
