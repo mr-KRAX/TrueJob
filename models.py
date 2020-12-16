@@ -130,7 +130,7 @@ class User:
 """
 Class User
 """
-
+import random, string
 
 @dataclass
 class Offer:
@@ -153,6 +153,11 @@ class Offer:
 
   _possible_status = ("Active", "InProgress", "Hidden", "Closed")
   _possible_priority = ("Top", "Regular", "Low")
+
+  @staticmethod 
+  def get_rand_id():
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(10))
 
   @staticmethod
   def check_status_value(type):
@@ -220,7 +225,7 @@ class Offer:
 
   @status.setter
   def status(self, value):
-    if (Offer.check_status_value(value)):
+    if not (Offer.check_status_value(value)):
       raise ValueError("Invalid status value", value)
     self._status = value
 
@@ -238,7 +243,7 @@ class Offer:
 
   @priority.setter
   def priority(self, value):
-    if (Offer.check_priority_value(value)):
+    if not (Offer.check_priority_value(value)):
       raise ValueError("Invalid priority value", value)
     self._priority = value
 

@@ -72,20 +72,105 @@ REST ЗАПРОСЫ
         {as_who: “worker/employer”, # Обязательный параметр
          mark: REAL}                # Обязательный параметр
 
+/offers
+[+] GET - запросить все объявления
+
 /offers/<str:gps>&<int:radius>
 [-] GET - запросить объявления в радиусе (На стороне api)
 
 /offers/owned/<vkid>
-    GET - запросить опубликованные объявления по юзеру
+[+]  GET - запросить опубликованные объявления по юзеру
 /offers/liked/<vkid>
     GET - запрос лайкнутых объявлений по юзеру
 
 /offer/
-    POST - опубликовать
+[+]    POST - опубликовать
+      Тело запроса: (Все параметры обязательные)
+      '{
+        "name":"Offer12", 
+        "description":"discription1", 
+        "price":100000,               # В копейках(центах и тд)
+        "exp_date":"20.10.2020", 
+        "location":"Zelenograd", 
+        "status":"Active", 
+        "owner":"vkid1", 
+        "time_created":"12:13 10.10.2020"
+        }'
+      Return:
+        Code:
+          200/400
+        Offer:
+          {
+          "offer_id": "gkcpjfzwlw",
+          "name": "Offer1",
+          "description": "discription1",
+          "price": 10,
+          "exp_date": "20.10.2020",
+          "location": "Zelenograd",
+          "status": "Hidden",
+          "owner": "vkid1",
+          "priority": "Low",
+          "time_created": "12:13 10.10.2020",
+          "views_counter": 0,
+          "likes_counter": 0
+          }
+          или
+          ["message"]
 /offer/<int:id>
-    GET - получить объявление по id
-    PUT - изменить (описание, статус, приорет)
-    DELETE - удалить объявление
+[+]    GET - получить объявление по id
+[+]    PUT - изменить (описание, статус, приорет)
+      Тело запроса: (Все параметры НЕ обязательные)
+      '{
+        "name":"Offer12", 
+        "description":"discription1", 
+        "price":100000,               # В копейках(центах и тд)
+        "exp_date":"20.10.2020", 
+        "location":"Zelenograd", 
+        "status":"Active", 
+        "owner":"vkid1", 
+        "time_created":"12:13 10.10.2020"
+        }'
+      Return:
+        Code:
+          200/400/404/500
+        Измененный Offer:
+          {
+          "offer_id": "gkcpjfzwlw",
+          "name": "Offer1",
+          "description": "discription1",
+          "price": 10,
+          "exp_date": "20.10.2020",
+          "location": "Zelenograd",
+          "status": "Hidden",
+          "owner": "vkid1",
+          "priority": "Low",
+          "time_created": "12:13 10.10.2020",
+          "views_counter": 0,
+          "likes_counter": 0
+          }
+          или
+          ["message"]
+[+]    DELETE - удалить объявление
+      Return:
+        Code:
+          404/200/500
+        Удвленный Offer:
+          {
+          "offer_id": "gkcpjfzwlw",
+          "name": "Offer1",
+          "description": "discription1",
+          "price": 10,
+          "exp_date": "20.10.2020",
+          "location": "Zelenograd",
+          "status": "Hidden",
+          "owner": "vkid1",
+          "priority": "Low",
+          "time_created": "12:13 10.10.2020",
+          "views_counter": 0,
+          "likes_counter": 0
+          }
+          или
+          ["message"]
 /offer/like/<int:id>
     POST - добавить объявление в избранное
     DELETE - убрать объявление из избранного
@@ -139,7 +224,22 @@ class Offers(Resource):
 
 
 api.add_resource( 
-    Offers, "/offers/<string:coordinates>/<int:radius>", endpoint="offers")
+    Offers, "/offers/<string:coordinates>/<int:radius>", endpoint="offers/")
+# api.add_resource(Offers, "/offers/", endpoint="offers")
+
+class OffersAll(Resource):
+  def get(self):
+    """
+    Запросить опубликованные объявления
+    """
+    offers = DB.getAllOffers()
+    if offers is None:
+      return ["Offers not found"], 404
+    return [of.asDict() for of in offers], 200
+
+
+api.add_resource( 
+    OffersAll, "/offers", endpoint="offers")
 # api.add_resource(Offers, "/offers/", endpoint="offers")
 
 
@@ -148,7 +248,11 @@ class OffersOwned(Resource):
     """
     Запросить опубликованные объявления по юзеру
     """
-    return "OffersOwned", 200
+    offers = DB.getOffersByUser(vkid)
+    if offers is None:
+      return ["Offers not found"], 404
+    
+    return [of.asDict() for of in offers], 200
 
 
 api.add_resource(OffersOwned, "/offers/owned/<vkid>", endpoint="owned")
@@ -166,20 +270,60 @@ api.add_resource(OffersLiked, "/offers/liked/<vkid>", endpoint="liked")
 
 
 class Offer(Resource):
+  def __init__(self):
+    self.reqparse = reqparse.RequestParser()
+    self.reqparse.add_argument('name', type=str, required=False, location='json')
+    self.reqparse.add_argument('description', type=str, required=False, location='json')
+    self.reqparse.add_argument('price', type=int, required=False, location='json')
+    self.reqparse.add_argument('exp_date', type=str, required=False, location='json')
+    self.reqparse.add_argument('location', type=str, required=False, location='json')
+    self.reqparse.add_argument('status', type=str, required=False, location='json')
+    self.reqparse.add_argument('priority', type=str, required=False, location='json')
+    self.reqparse.add_argument('time_created', type=str, required=False, location='json')
+ 
   def get(self, id):
     """
     Получить объявление по id
     """
-    return "Offer get", 200
+    logMsg("GET Offer: " + str(id))
+    offer = DB.getOffer(str(id))
+    logMsg(offer)
+    if offer is None:
+      return ["Offer not found"], 404
+    return offer.asDict(), 200
 
   def put(self, id):
     """
     Изменить (описание, статус, приорет)
     """
-    return "Offer put", 200
+    offer = DB.getOffer(id)
+    if offer is None:
+      return ["Offer not found"], 404
+    args = dict(self.reqparse.parse_args())
+    try:
+      for field, value in args.items():
+        if value != None:
+          offer.setAttr(field, value)
+    except ValueError:
+      return ["Invalid " + field +" value " + str(value)], 400
+    if (DB.updateOffer(offer)):
+      return offer.asDict(), 200
+    return ["Internal error"], 500
+
+    
+  def delete(self, id):
+    """
+    Удалить пост
+    """
+    offer = DB.getOffer(id)
+    if offer is None:
+      return ["Offer not found"], 404
+    if(DB.deleteOffer(id)):
+      return offer.asDict(), 200
+    return ["Internal error"], 500
 
 
-api.add_resource(Offer, "/offer/<int:id>", endpoint="offer")
+api.add_resource(Offer, "/offer/<id>", endpoint="offer")
 
 
 class OfferLike(Resource):
@@ -199,15 +343,41 @@ class OfferLike(Resource):
 api.add_resource(OffersOwned, "/offer/like/<int:id>", endpoint="like")
 
 
-class OfferPost(Resource):
+class OfferAdd(Resource):
+  def __init__(self):
+    self.reqparse = reqparse.RequestParser()
+    self.reqparse.add_argument('name', type=str, required=True, location='json')
+    self.reqparse.add_argument('description', type=str, required=True, location='json')
+    self.reqparse.add_argument('price', type=int, required=True, location='json')
+    self.reqparse.add_argument('exp_date', type=str, required=True, location='json')
+    self.reqparse.add_argument('location', type=str, required=True, location='json')
+    self.reqparse.add_argument('status', type=str, required=True, location='json')
+    # self.reqparse.add_argument('priority', type=str, required=True, location='json')
+    self.reqparse.add_argument('time_created', type=str, required=True, location='json')
+    super(OfferAdd, self).__init__()
+  
+  # @auth.login_required
   def post(self):
     """
     Опубликовать пост
     """
-    return "OfferPost", 200
+    logMsg("AddUser req:" + str(dict(self.reqparse.parse_args())))
+    offerid = models.Offer.get_rand_id()
+    while (DB.getOffer(offerid)):
+      offerid = models.Offer.get_rand_id()
+
+    try:
+      #TODO owner from auth
+      offer = models.Offer(offerid, **self.reqparse.parse_args())
+    except ValueError as e:
+      return e.args, 400
+    logMsg("Offer" + str(offer))
+    if DB.addOffer(offer):
+      return offer.asDict(), 200
+    return ["Offer exists"], 400
 
 
-api.add_resource(OfferPost, "/offer/")
+api.add_resource(OfferAdd, "/offer/")
 
 
 class OfferReport(Resource):
@@ -271,7 +441,7 @@ class User(Resource):
     """
     Изменить пользователя
     """
-    logMsg("PUT User: "+ str(vkid) +" req: " + str(self.reqparse.parse_args()))
+    logMsg("PUT User: "+ str(vkid))
     user = DB.getUser(vkid)
     if user is None:
       return ["User not found"], 404
@@ -281,7 +451,7 @@ class User(Resource):
         if value != None:
           user.setAttr(field, value)
     except ValueError:
-      return ["Invalid status value " + str(value)], 400
+      return ["Invalid " + field +" value " + str(value)], 400
     if (DB.updateUser(user)):
       return user.asDict(), 200
     return ["Internal error"], 500

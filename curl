@@ -23,3 +23,29 @@ curl\
  -X PUT \
  -d '{"status":"Gold"}'
 
+
+
+POST1 offer:
+curl \
+ -u 1234: \
+ -i -H 'Content-Type: application/json' http://127.0.0.1:5000/offer/ \
+ -X POST \
+ -d '{"name":"Offer12", "description":"discription1", "price":100000, "exp_date":"20.10.2020", "location":"Zelenograd", "status":"Active", "owner":"vkid1", "time_created":"12:13 10.10.2020"}'
+
+GET1 offer:
+curl \
+-u 1: \
+-i -H 'Content-Type: application/json' http://127.0.0.1:5000/offer/gkcpjfzwlw
+
+PUT1 offer:
+curl \
+-u 1: \
+-i -H 'Content-Type: application/json' http://127.0.0.1:5000/offer/gkcpjfzwlw \
+-X PUT \
+-d '{"status":"Hidden", "priority": "Regular"}'
+
+DELETE1 offer:
+curl \
+-u 1: \
+-X DELETE \
+-i -H 'Content-Type: application/json' http://127.0.0.1:5000/offer/tdoeezrwwd
