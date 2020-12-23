@@ -400,8 +400,8 @@ def updateAsssessment(assessment: Assessment):
           (assessment.user, assessment.assessed_user,
            assessment.assessment_as_worker, assessment.assessment_as_employer,
            assessment.user, assessment.assessed_user))
-          db.commit()
-          return True
+      db.commit()
+      return True
   return False
 
 
