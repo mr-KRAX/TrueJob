@@ -286,7 +286,7 @@ def getAssessment(vkid: str, assessed_vkid: str):
       формирования словаря.
       """
       rowDict = dict(zip([column[0] for column in cursor.description], row))
-      assessment = Assessment(**rowDict)
+      assessment = Assessment(rowDict)
       return assessment
   return None
 
@@ -324,36 +324,11 @@ def getAllAssessments(assessed_vkid: str):
     cursor.execute("SELECT * FROM assessments \
         WHERE assessed_user = (?)",
         (assessed_vkid, ))
-    if cursor.fetchall() is not None:
-      list_of_assessment = [list(assessment) for assessment in cursor.fetchall()]
+    rows = cursor.fetchall()
+    if rows is not None:
+      list_of_assessment = list()
+      for row in rows:
+        rowDict = dict(zip([column[0] for column in cursor.description], row))
+        list_of_assessment.append(Assessment(rowDict))
       return list_of_assessment
   return None
-
-
-# def printResult():
-#   cursor = database.cursor()
-#   for value in cursor.execute(f"SELECT * FROM users"):
-#     print(value)
-
-
-# if __name__ == "__main__":
-#   user_dict_1 = {"vkid": "kdator", "type": "user", "employer_rating": 5.0, 
-#             "worker_rating": 4.5, "status": "regular", "is_blocked": 0}
-#   user_dict_2 = {"vkid": "kdator", "type": "admin", "employer_rating": 3.3, 
-#             "worker_rating": 2.2, "status": "super", "is_blocked": 1}
-#   user_dict_3 = {"vkid": "_kr.alex_", "type": "admin", "employer_rating": 5.0,
-#             "worker_rating": 5.0, "status": "Gold", "is_blocked": 0}
-#   first_user = User(user_dict_1)
-#   second_user = User(user_dict_2)
-#   third_user = User(user_dict_3)
-#   initNewConnect()
-#   addUser(first_user)
-#   addUser(third_user)
-#   printResult()
-#   print("------------------------")
-#   updateUser(second_user)
-#   printResult()
-#   deleteUser("kdator")
-#   print("------------------------")
-#   printResult()
-#   closeConnect()
